@@ -13,7 +13,7 @@ config.color_scheme = 'Catppuccin Mocha'
 
 -- Window
 config.window_padding = { left = 8, right = 8, top = 8, bottom = 8 }
-config.window_background_opacity = 0.9  -- 0.0 fully transparent, 1.0 solid
+config.window_background_opacity = 0.95  -- 0.0 fully transparent, 1.0 solid
 config.enable_tab_bar = true
 config.hide_tab_bar_if_only_one_tab = true
 
