@@ -39,14 +39,29 @@ table.insert(config.hyperlink_rules, { regex = '\\{(\\w+://\\S+)\\}',   format =
 table.insert(config.hyperlink_rules, { regex = '<(\\w+://\\S+)>',       format = '$1', highlight = 1 })
 
 -- Keybindings
-config.keys = {
-  -- Ctrl+Backspace: delete whole line
-  { key = 'Backspace', mods = 'CTRL', action = wezterm.action.SendString('\x15') },
-  -- Ctrl+Delete: delete word forward
-  { key = 'Delete', mods = 'CTRL', action = wezterm.action.SendString('\x1b[3;5~') },
-  -- Ctrl+Shift+X: enter copy mode for vim-like selection
-  { key = 'X', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateCopyMode },
-}
+local is_mac = wezterm.target_triple:find('darwin') ~= nil
+
+if is_mac then
+  config.keys = {
+    -- Cmd+Backspace: delete whole line (standard macOS)
+    { key = 'Backspace', mods = 'CMD',  action = wezterm.action.SendString('\x15') },
+    -- Option+Backspace: delete word backward (standard macOS)
+    { key = 'Backspace', mods = 'OPT',  action = wezterm.action.SendString('\x17') },
+    -- Option+Delete: delete word forward (standard macOS, Fn+Backspace)
+    { key = 'Delete',    mods = 'OPT',  action = wezterm.action.SendString('\x1bd') },
+    -- Ctrl+Shift+X: copy mode
+    { key = 'X', mods = 'CTRL|SHIFT',   action = wezterm.action.ActivateCopyMode },
+  }
+else
+  config.keys = {
+    -- Ctrl+Backspace: delete whole line
+    { key = 'Backspace', mods = 'CTRL', action = wezterm.action.SendString('\x15') },
+    -- Ctrl+Delete: delete word forward
+    { key = 'Delete',    mods = 'CTRL', action = wezterm.action.SendString('\x1b[3;5~') },
+    -- Ctrl+Shift+X: copy mode
+    { key = 'X', mods = 'CTRL|SHIFT',   action = wezterm.action.ActivateCopyMode },
+  }
+end
 
 -- Start maximized
 wezterm.on('gui-startup', function()
