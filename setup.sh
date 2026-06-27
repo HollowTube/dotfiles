@@ -113,11 +113,24 @@ fi
 
 ok "Setup complete! Restart your shell or run: source ~/.zshrc"
 
-# --- WezTerm (Windows only) ---
-WIN_USER=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r')
-if [ -n "$WIN_USER" ] && [ -d "/mnt/c/Users/$WIN_USER" ]; then
-  cp "$DOTFILES_DIR/wezterm/.wezterm.lua" "/mnt/c/Users/$WIN_USER/.wezterm.lua"
-  ok "Copied .wezterm.lua to Windows user dir (C:\\Users\\$WIN_USER)"
+# --- WezTerm ---
+if [ "$(uname)" = "Darwin" ]; then
+  # macOS: install via brew and symlink config
+  if ! command -v wezterm &>/dev/null; then
+    info "Installing WezTerm..."
+    brew install --cask wezterm
+  else
+    skip "WezTerm already installed"
+  fi
+  ln -sf "$DOTFILES_DIR/wezterm/.wezterm.lua" "$HOME/.wezterm.lua"
+  ok "Linked ~/.wezterm.lua"
 else
-  echo "[WARN]  Could not detect Windows user — copy dotfiles/wezterm/.wezterm.lua to C:\\Users\\<you>\\ manually"
+  # WSL: copy config to Windows user directory
+  WIN_USER=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+  if [ -n "$WIN_USER" ] && [ -d "/mnt/c/Users/$WIN_USER" ]; then
+    cp "$DOTFILES_DIR/wezterm/.wezterm.lua" "/mnt/c/Users/$WIN_USER/.wezterm.lua"
+    ok "Copied .wezterm.lua to Windows user dir (C:\\Users\\$WIN_USER)"
+  else
+    echo "[WARN]  Could not detect Windows user — copy dotfiles/wezterm/.wezterm.lua to C:\\Users\\<you>\\ manually"
+  fi
 fi

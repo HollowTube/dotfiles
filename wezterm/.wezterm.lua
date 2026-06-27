@@ -1,8 +1,10 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
--- Default to Fedora WSL instance
-config.default_domain = 'WSL:FedoraLinux-44'
+-- On Windows, default into the Fedora WSL instance
+if wezterm.target_triple:find('windows') then
+  config.default_domain = 'WSL:FedoraLinux-44'
+end
 
 -- Font — change to whichever Nerd Font you installed
 config.font = wezterm.font('JetBrainsMono Nerd Font')
