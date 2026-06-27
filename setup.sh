@@ -81,6 +81,9 @@ if [ ! -d "$HOME/.config/nvim" ]; then
 else
   skip "nvim config already exists (~/.config/nvim)"
 fi
+# Overlay custom lua config (symlink each file so dotfiles stay in sync)
+ln -sf "$DOTFILES_DIR/nvim-custom" "$HOME/.config/nvim/lua"
+ok "Linked nvim custom lua config"
 
 # --- .zshrc symlink ---
 # OMZ already backed up the pre-existing ~/.zshrc to ~/.zshrc.pre-oh-my-zsh.
