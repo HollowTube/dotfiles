@@ -69,6 +69,10 @@ else
   skip "nvim already installed ($(nvim --version | head -1))"
 fi
 
+# --- config symlinks ---
+ln -sf "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+ok "Linked ~/.tmux.conf"
+
 # --- .zshrc symlink ---
 # OMZ already backed up the pre-existing ~/.zshrc to ~/.zshrc.pre-oh-my-zsh.
 # We just replace whatever is there now with a symlink to our dotfiles version.
