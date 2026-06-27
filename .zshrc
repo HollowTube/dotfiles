@@ -81,6 +81,14 @@ source $ZSH/oh-my-zsh.sh
 export EDITOR="nvim"
 export VISUAL="nvim"
 alias vim="nvim"
+alias lg="lazygit"
+
+# zoxide (smarter cd — use 'z' instead of 'cd')
+eval "$(zoxide init zsh)"
+
+# Line editing keybindings
+bindkey '^U' kill-whole-line        # Ctrl+U deletes entire line
+bindkey '^[[3;2~' kill-whole-line   # Shift+Delete deletes entire line
 
 # export MANPATH="/usr/local/man:$MANPATH"
 

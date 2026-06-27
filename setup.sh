@@ -81,6 +81,41 @@ if [ "$IS_REMOTE_LINUX" = false ] && [ "$IS_MAC" = false ]; then
   fi
 fi
 
+# --- zoxide ---
+if ! command -v zoxide &>/dev/null; then
+  info "Installing zoxide..."
+  if command -v brew &>/dev/null; then
+    brew install zoxide
+  elif command -v apt-get &>/dev/null; then
+    sudo apt-get install -y zoxide
+  elif command -v dnf &>/dev/null; then
+    sudo dnf install -y zoxide
+  elif command -v pacman &>/dev/null; then
+    sudo pacman -S --noconfirm zoxide
+  else
+    warn "Could not install zoxide — install manually from https://github.com/ajeetdsouza/zoxide"
+  fi
+else
+  skip "zoxide already installed ($(zoxide --version))"
+fi
+
+# --- lazygit ---
+if ! command -v lazygit &>/dev/null; then
+  info "Installing lazygit..."
+  if command -v brew &>/dev/null; then
+    brew install lazygit
+  elif command -v dnf &>/dev/null; then
+    sudo dnf copr enable atim/lazygit -y && sudo dnf install -y lazygit
+  else
+    LG_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep '"tag_name"' | sed 's/.*"v\(.*\)".*/\1/')
+    curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LG_VERSION}_Linux_x86_64.tar.gz"
+    tar -xf /tmp/lazygit.tar.gz -C /tmp lazygit
+    sudo install /tmp/lazygit /usr/local/bin/lazygit
+  fi
+else
+  skip "lazygit already installed ($(lazygit --version | grep -o 'version=[^ ,]*'))"
+fi
+
 # --- tmux ---
 if ! command -v tmux &>/dev/null; then
   info "Installing tmux..."
