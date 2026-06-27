@@ -74,8 +74,13 @@ ln -sf "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 ok "Linked ~/.tmux.conf"
 
 mkdir -p "$HOME/.config"
-ln -sf "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
-ok "Linked ~/.config/nvim"
+if [ ! -d "$HOME/.config/nvim" ]; then
+  info "Installing NvChad..."
+  git clone https://github.com/NvChad/starter "$HOME/.config/nvim"
+  ok "NvChad cloned — open nvim to finish installation"
+else
+  skip "nvim config already exists (~/.config/nvim)"
+fi
 
 # --- .zshrc symlink ---
 # OMZ already backed up the pre-existing ~/.zshrc to ~/.zshrc.pre-oh-my-zsh.
