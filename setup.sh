@@ -45,11 +45,6 @@ fi
 
 # --- Oh My Zsh ---
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
-  # Back up existing .zshrc before OMZ overwrites it
-  if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
-    cp "$HOME/.zshrc" "$HOME/.zshrc.bak.$(date +%Y%m%d%H%M%S)"
-    info "Backed up ~/.zshrc before OMZ install"
-  fi
   info "Installing Oh My Zsh..."
   RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   ok "Oh My Zsh installed"
@@ -103,8 +98,12 @@ else
 fi
 
 # --- config symlinks ---
-ln -sf "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
-ok "Linked ~/.tmux.conf"
+if [ ! -f "$HOME/.tmux.conf" ] || [ -L "$HOME/.tmux.conf" ]; then
+  ln -sf "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
+  ok "Linked ~/.tmux.conf"
+else
+  skip "~/.tmux.conf already exists — leaving it. Reference: $DOTFILES_DIR/.tmux.conf"
+fi
 
 mkdir -p "$HOME/.config"
 if [ ! -d "$HOME/.config/nvim" ]; then
@@ -119,13 +118,12 @@ ok "Linked nvim custom lua config"
 
 # --- .zshrc symlink ---
 if [ -f "$DOTFILES_DIR/.zshrc" ]; then
-  if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
-    BACKUP="$HOME/.zshrc.bak.$(date +%Y%m%d%H%M%S)"
-    cp "$HOME/.zshrc" "$BACKUP"
-    warn "Existing ~/.zshrc backed up to $BACKUP"
+  if [ ! -f "$HOME/.zshrc" ] || [ -L "$HOME/.zshrc" ]; then
+    ln -sf "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
+    ok "Linked ~/.zshrc → $DOTFILES_DIR/.zshrc"
+  else
+    skip "~/.zshrc already exists — leaving it. Reference: $DOTFILES_DIR/.zshrc"
   fi
-  ln -sf "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
-  ok "Linked ~/.zshrc → $DOTFILES_DIR/.zshrc"
 else
   skip "No .zshrc in dotfiles dir — skipping symlink"
 fi
