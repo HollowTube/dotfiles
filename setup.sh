@@ -44,12 +44,15 @@ else
 fi
 
 # --- Oh My Zsh ---
-# Note: the OMZ installer automatically backs up any existing ~/.zshrc to
-# ~/.zshrc.pre-oh-my-zsh before replacing it, so the original is always safe.
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  # Back up existing .zshrc before OMZ overwrites it
+  if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+    cp "$HOME/.zshrc" "$HOME/.zshrc.bak.$(date +%Y%m%d%H%M%S)"
+    info "Backed up ~/.zshrc before OMZ install"
+  fi
   info "Installing Oh My Zsh..."
   RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
-  ok "Oh My Zsh installed (original ~/.zshrc backed up to ~/.zshrc.pre-oh-my-zsh)"
+  ok "Oh My Zsh installed"
 else
   skip "Oh My Zsh already installed"
 fi
@@ -115,9 +118,12 @@ ln -sf "$DOTFILES_DIR/nvim-custom" "$HOME/.config/nvim/lua"
 ok "Linked nvim custom lua config"
 
 # --- .zshrc symlink ---
-# OMZ already backed up the pre-existing ~/.zshrc to ~/.zshrc.pre-oh-my-zsh.
-# We just replace whatever is there now with a symlink to our dotfiles version.
 if [ -f "$DOTFILES_DIR/.zshrc" ]; then
+  if [ -f "$HOME/.zshrc" ] && [ ! -L "$HOME/.zshrc" ]; then
+    BACKUP="$HOME/.zshrc.bak.$(date +%Y%m%d%H%M%S)"
+    cp "$HOME/.zshrc" "$BACKUP"
+    warn "Existing ~/.zshrc backed up to $BACKUP"
+  fi
   ln -sf "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
   ok "Linked ~/.zshrc → $DOTFILES_DIR/.zshrc"
 else
