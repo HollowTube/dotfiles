@@ -19,6 +19,23 @@ return {
     dependencies = { "nvim-lua/plenary.nvim" },
   },
 
+  -- Transparent background (respects terminal/WezTerm opacity)
+  {
+    "xiyaowong/transparent.nvim",
+    lazy = false,
+    config = function()
+      require("transparent").setup({
+        extra_groups = {
+          "NormalFloat",
+          "NvimTreeNormal",
+          "NvimTreeNormalNC",
+          "TelescopeNormal",
+          "TelescopeBorder",
+        },
+      })
+    end,
+  },
+
   -- Which-key: shows available keybindings after leader pause
   {
     "folke/which-key.nvim",

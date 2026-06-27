@@ -8,11 +8,7 @@ local M = {}
 M.base46 = {
 	theme = "catppuccin",
 
-	hl_override = {
-		Normal    = { bg = "NONE" },
-		NormalNC  = { bg = "NONE" },
-		NormalFloat = { bg = "NONE" },
-	},
+	-- hl_override = {},
 }
 
 -- M.nvdash = { load_on_startup = true }
