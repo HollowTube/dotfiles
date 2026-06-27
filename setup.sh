@@ -73,6 +73,10 @@ fi
 ln -sf "$DOTFILES_DIR/.tmux.conf" "$HOME/.tmux.conf"
 ok "Linked ~/.tmux.conf"
 
+mkdir -p "$HOME/.config"
+ln -sf "$DOTFILES_DIR/nvim" "$HOME/.config/nvim"
+ok "Linked ~/.config/nvim"
+
 # --- .zshrc symlink ---
 # OMZ already backed up the pre-existing ~/.zshrc to ~/.zshrc.pre-oh-my-zsh.
 # We just replace whatever is there now with a symlink to our dotfiles version.
