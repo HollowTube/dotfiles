@@ -38,6 +38,16 @@ table.insert(config.hyperlink_rules, { regex = '\\[(\\w+://\\S+)\\]',   format =
 table.insert(config.hyperlink_rules, { regex = '\\{(\\w+://\\S+)\\}',   format = '$1', highlight = 1 })
 table.insert(config.hyperlink_rules, { regex = '<(\\w+://\\S+)>',       format = '$1', highlight = 1 })
 
+-- Keybindings
+config.keys = {
+  -- Ctrl+Backspace: delete whole line
+  { key = 'Backspace', mods = 'CTRL', action = wezterm.action.SendString('\x15') },
+  -- Ctrl+Delete: delete word forward
+  { key = 'Delete', mods = 'CTRL', action = wezterm.action.SendString('\x1b[3;5~') },
+  -- Ctrl+Shift+X: enter copy mode for vim-like selection
+  { key = 'X', mods = 'CTRL|SHIFT', action = wezterm.action.ActivateCopyMode },
+}
+
 -- Start maximized
 wezterm.on('gui-startup', function()
   local _, _, window = wezterm.mux.spawn_window {}
