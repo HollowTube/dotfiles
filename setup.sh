@@ -6,6 +6,42 @@ DOTFILES_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 info()  { echo "[INFO]  $*"; }
 ok()    { echo "[OK]    $*"; }
 skip()  { echo "[SKIP]  $*"; }
+warn()  { echo "[WARN]  $*"; }
+
+# Detect package manager
+pkg_install() {
+  if command -v brew &>/dev/null; then
+    brew install "$@"
+  elif command -v apt-get &>/dev/null; then
+    sudo apt-get install -y "$@"
+  elif command -v dnf &>/dev/null; then
+    sudo dnf install -y "$@"
+  elif command -v pacman &>/dev/null; then
+    sudo pacman -S --noconfirm "$@"
+  else
+    warn "No supported package manager found — install $* manually"
+    return 1
+  fi
+}
+
+IS_WSL=false
+IS_MAC=false
+IS_REMOTE_LINUX=false
+if [ "$(uname)" = "Darwin" ]; then
+  IS_MAC=true
+elif grep -qi microsoft /proc/version 2>/dev/null; then
+  IS_WSL=true
+else
+  IS_REMOTE_LINUX=true
+fi
+
+# --- zsh ---
+if ! command -v zsh &>/dev/null; then
+  info "Installing zsh..."
+  pkg_install zsh
+else
+  skip "zsh already installed ($(zsh --version))"
+fi
 
 # --- Oh My Zsh ---
 # Note: the OMZ installer automatically backs up any existing ~/.zshrc to
@@ -37,17 +73,11 @@ else
   skip "zsh-syntax-highlighting already installed"
 fi
 
-# --- xclip (clipboard over SSH on Linux) ---
-if [ "$(uname)" = "Linux" ] && ! grep -qi microsoft /proc/version 2>/dev/null; then
+# --- xclip (clipboard — only useful on Linux with a display, skip headless) ---
+if [ "$IS_REMOTE_LINUX" = false ] && [ "$IS_MAC" = false ]; then
   if ! command -v xclip &>/dev/null; then
-    info "Installing xclip for clipboard support..."
-    if command -v apt-get &>/dev/null; then
-      sudo apt-get install -y xclip
-    elif command -v pacman &>/dev/null; then
-      sudo pacman -S --noconfirm xclip
-    else
-      echo "[WARN]  Could not install xclip — clipboard may not work over SSH"
-    fi
+    info "Installing xclip..."
+    pkg_install xclip || true
   else
     skip "xclip already installed"
   fi
@@ -56,15 +86,7 @@ fi
 # --- tmux ---
 if ! command -v tmux &>/dev/null; then
   info "Installing tmux..."
-  if command -v apt-get &>/dev/null; then
-    sudo apt-get install -y tmux
-  elif command -v brew &>/dev/null; then
-    brew install tmux
-  elif command -v pacman &>/dev/null; then
-    sudo pacman -S --noconfirm tmux
-  else
-    echo "[WARN]  Could not detect package manager — install tmux manually"
-  fi
+  pkg_install tmux
 else
   skip "tmux already installed ($(tmux -V))"
 fi
@@ -72,15 +94,7 @@ fi
 # --- nvim ---
 if ! command -v nvim &>/dev/null; then
   info "Installing neovim..."
-  if command -v apt-get &>/dev/null; then
-    sudo apt-get install -y neovim
-  elif command -v brew &>/dev/null; then
-    brew install neovim
-  elif command -v pacman &>/dev/null; then
-    sudo pacman -S --noconfirm neovim
-  else
-    echo "[WARN]  Could not detect package manager — install nvim manually"
-  fi
+  pkg_install neovim
 else
   skip "nvim already installed ($(nvim --version | head -1))"
 fi
@@ -97,7 +111,6 @@ if [ ! -d "$HOME/.config/nvim" ]; then
 else
   skip "nvim config already exists (~/.config/nvim)"
 fi
-# Overlay custom lua config (symlink each file so dotfiles stay in sync)
 ln -sf "$DOTFILES_DIR/nvim-custom" "$HOME/.config/nvim/lua"
 ok "Linked nvim custom lua config"
 
@@ -112,10 +125,12 @@ else
 fi
 
 ok "Setup complete! Restart your shell or run: source ~/.zshrc"
+if command -v zsh &>/dev/null && [ "$(basename "$SHELL")" != "zsh" ]; then
+  warn "zsh is not your default shell — run: chsh -s \$(which zsh)"
+fi
 
 # --- WezTerm ---
-if [ "$(uname)" = "Darwin" ]; then
-  # macOS: install via brew and symlink config
+if [ "$IS_MAC" = true ]; then
   if ! command -v wezterm &>/dev/null; then
     info "Installing WezTerm..."
     brew install --cask wezterm
@@ -124,13 +139,14 @@ if [ "$(uname)" = "Darwin" ]; then
   fi
   ln -sf "$DOTFILES_DIR/wezterm/.wezterm.lua" "$HOME/.wezterm.lua"
   ok "Linked ~/.wezterm.lua"
-else
-  # WSL: copy config to Windows user directory
+elif [ "$IS_WSL" = true ]; then
   WIN_USER=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r')
   if [ -n "$WIN_USER" ] && [ -d "/mnt/c/Users/$WIN_USER" ]; then
     cp "$DOTFILES_DIR/wezterm/.wezterm.lua" "/mnt/c/Users/$WIN_USER/.wezterm.lua"
     ok "Copied .wezterm.lua to Windows user dir (C:\\Users\\$WIN_USER)"
   else
-    echo "[WARN]  Could not detect Windows user — copy dotfiles/wezterm/.wezterm.lua to C:\\Users\\<you>\\ manually"
+    warn "Could not detect Windows user — copy dotfiles/wezterm/.wezterm.lua to C:\\Users\\<you>\\ manually"
   fi
+else
+  skip "WezTerm — not applicable on remote Linux"
 fi
