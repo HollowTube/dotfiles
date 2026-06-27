@@ -21,6 +21,6 @@ config.hide_tab_bar_if_only_one_tab = true
 config.default_cursor_style = 'BlinkingBar'
 
 -- Remove the title bar (clean look), keep resize border
-config.window_decorations = 'TITLE | RESIZE'
+config.window_decorations = 'RESIZE'
 
 return config
