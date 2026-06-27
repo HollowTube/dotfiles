@@ -37,6 +37,22 @@ else
   skip "zsh-syntax-highlighting already installed"
 fi
 
+# --- tmux ---
+if ! command -v tmux &>/dev/null; then
+  info "Installing tmux..."
+  if command -v apt-get &>/dev/null; then
+    sudo apt-get install -y tmux
+  elif command -v brew &>/dev/null; then
+    brew install tmux
+  elif command -v pacman &>/dev/null; then
+    sudo pacman -S --noconfirm tmux
+  else
+    echo "[WARN]  Could not detect package manager — install tmux manually"
+  fi
+else
+  skip "tmux already installed ($(tmux -V))"
+fi
+
 # --- nvim ---
 if ! command -v nvim &>/dev/null; then
   info "Installing neovim..."
