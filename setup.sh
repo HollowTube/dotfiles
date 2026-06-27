@@ -37,6 +37,22 @@ else
   skip "zsh-syntax-highlighting already installed"
 fi
 
+# --- xclip (clipboard over SSH on Linux) ---
+if [ "$(uname)" = "Linux" ] && ! grep -qi microsoft /proc/version 2>/dev/null; then
+  if ! command -v xclip &>/dev/null; then
+    info "Installing xclip for clipboard support..."
+    if command -v apt-get &>/dev/null; then
+      sudo apt-get install -y xclip
+    elif command -v pacman &>/dev/null; then
+      sudo pacman -S --noconfirm xclip
+    else
+      echo "[WARN]  Could not install xclip — clipboard may not work over SSH"
+    fi
+  else
+    skip "xclip already installed"
+  fi
+fi
+
 # --- tmux ---
 if ! command -v tmux &>/dev/null; then
   info "Installing tmux..."
