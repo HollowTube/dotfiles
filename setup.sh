@@ -112,3 +112,12 @@ else
 fi
 
 ok "Setup complete! Restart your shell or run: source ~/.zshrc"
+
+# --- WezTerm (Windows only) ---
+WIN_USER=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+if [ -n "$WIN_USER" ] && [ -d "/mnt/c/Users/$WIN_USER" ]; then
+  cp "$DOTFILES_DIR/wezterm/.wezterm.lua" "/mnt/c/Users/$WIN_USER/.wezterm.lua"
+  ok "Copied .wezterm.lua to Windows user dir (C:\\Users\\$WIN_USER)"
+else
+  echo "[WARN]  Could not detect Windows user — copy dotfiles/wezterm/.wezterm.lua to C:\\Users\\<you>\\ manually"
+fi
