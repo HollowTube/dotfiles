@@ -29,7 +29,7 @@ config.use_fancy_tab_bar = false
 config.tab_bar_at_bottom = true
 
 -- Cursor
-config.default_cursor_style = 'BlinkingBar'
+config.default_cursor_style = 'SteadyBar'
 
 -- Clickable URLs in brackets, parens, angle brackets etc.
 config.hyperlink_rules = wezterm.default_hyperlink_rules()
@@ -60,6 +60,8 @@ else
     { key = 'Delete',    mods = 'CTRL', action = wezterm.action.SendString('\x1b[3;5~') },
     -- Ctrl+Shift+X: copy mode
     { key = 'X', mods = 'CTRL|SHIFT',   action = wezterm.action.ActivateCopyMode },
+    -- Ctrl+V: paste (Windows-style)
+    { key = 'V', mods = 'CTRL',         action = wezterm.action.PasteFrom('Clipboard') },
   }
 end
 

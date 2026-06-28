@@ -116,6 +116,14 @@ else
   skip "lazygit already installed ($(lazygit --version | grep -o 'version=[^ ,]*'))"
 fi
 
+# --- btop ---
+if ! command -v btop &>/dev/null; then
+  info "Installing btop..."
+  pkg_install btop
+else
+  skip "btop already installed"
+fi
+
 # --- tmux ---
 if ! command -v tmux &>/dev/null; then
   info "Installing tmux..."
