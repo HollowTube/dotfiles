@@ -218,6 +218,18 @@ elif [ "$IS_DESKTOP_LINUX" = true ]; then
   fi
   ln -sf "$DOTFILES_DIR/wezterm/.wezterm.lua" "$HOME/.wezterm.lua"
   ok "Linked ~/.wezterm.lua"
+
+  if ! fc-list | grep -q "JetBrainsMono Nerd Font"; then
+    info "Installing JetBrainsMono Nerd Font..."
+    FONT_DIR="$HOME/.local/share/fonts/JetBrainsMonoNerdFont"
+    mkdir -p "$FONT_DIR"
+    curl -fsSL https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.tar.xz \
+      | tar -xJ -C "$FONT_DIR" --wildcards '*.ttf'
+    fc-cache -f "$FONT_DIR"
+    ok "JetBrainsMono Nerd Font installed"
+  else
+    skip "JetBrainsMono Nerd Font already installed"
+  fi
 else
   skip "WezTerm — not applicable on remote Linux"
 fi
