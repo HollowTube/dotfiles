@@ -12,10 +12,10 @@ warn()  { echo "[WARN]  $*"; }
 pkg_install() {
   if command -v brew &>/dev/null; then
     brew install "$@"
-  elif command -v apt-get &>/dev/null; then
-    sudo apt-get install -y "$@"
   elif command -v dnf &>/dev/null; then
     sudo dnf install -y "$@"
+  elif command -v apt-get &>/dev/null; then
+    sudo apt-get install -y "$@"
   elif command -v pacman &>/dev/null; then
     sudo pacman -S --noconfirm "$@"
   else
@@ -86,10 +86,10 @@ if ! command -v zoxide &>/dev/null; then
   info "Installing zoxide..."
   if command -v brew &>/dev/null; then
     brew install zoxide
-  elif command -v apt-get &>/dev/null; then
-    sudo apt-get install -y zoxide
   elif command -v dnf &>/dev/null; then
     sudo dnf install -y zoxide
+  elif command -v apt-get &>/dev/null; then
+    sudo apt-get install -y zoxide
   elif command -v pacman &>/dev/null; then
     sudo pacman -S --noconfirm zoxide
   else
