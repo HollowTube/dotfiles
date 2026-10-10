@@ -27,10 +27,13 @@ pkg_install() {
 IS_WSL=false
 IS_MAC=false
 IS_REMOTE_LINUX=false
+IS_DESKTOP_LINUX=false
 if [ "$(uname)" = "Darwin" ]; then
   IS_MAC=true
 elif grep -qi microsoft /proc/version 2>/dev/null; then
   IS_WSL=true
+elif [ -n "$WAYLAND_DISPLAY" ] || [ -n "$DISPLAY" ]; then
+  IS_DESKTOP_LINUX=true
 else
   IS_REMOTE_LINUX=true
 fi
@@ -156,7 +159,13 @@ if [ ! -d "$HOME/.config/nvim" ]; then
 else
   skip "nvim config already exists (~/.config/nvim)"
 fi
-ln -sf "$DOTFILES_DIR/nvim-custom" "$HOME/.config/nvim/lua"
+NVIM_LUA="$HOME/.config/nvim/lua"
+if [ -e "$NVIM_LUA" ] && [ ! -L "$NVIM_LUA" ]; then
+  NVIM_LUA_BAK="$NVIM_LUA.bak.$(date +%Y%m%d%H%M%S)"
+  mv "$NVIM_LUA" "$NVIM_LUA_BAK"
+  warn "Moved existing nvim lua config to $NVIM_LUA_BAK"
+fi
+ln -sfn "$DOTFILES_DIR/nvim-custom" "$NVIM_LUA"
 ok "Linked nvim custom lua config"
 
 # --- .zshrc symlink ---
@@ -194,6 +203,21 @@ elif [ "$IS_WSL" = true ]; then
   else
     warn "Could not detect Windows user — copy dotfiles/wezterm/.wezterm.lua to C:\\Users\\<you>\\ manually"
   fi
+elif [ "$IS_DESKTOP_LINUX" = true ]; then
+  if ! command -v wezterm &>/dev/null; then
+    info "Installing WezTerm..."
+    if command -v dnf &>/dev/null; then
+      sudo dnf copr enable wezfurlong/wezterm-nightly -y && sudo dnf install -y wezterm
+    elif command -v flatpak &>/dev/null; then
+      flatpak install -y flathub org.wezfurlong.wezterm
+    else
+      warn "Could not install WezTerm — see https://wezterm.org/install/linux.html"
+    fi
+  else
+    skip "WezTerm already installed"
+  fi
+  ln -sf "$DOTFILES_DIR/wezterm/.wezterm.lua" "$HOME/.wezterm.lua"
+  ok "Linked ~/.wezterm.lua"
 else
   skip "WezTerm — not applicable on remote Linux"
 fi
