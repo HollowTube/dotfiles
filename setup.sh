@@ -66,12 +66,12 @@ else
   skip "zsh-autosuggestions already installed"
 fi
 
-if [ ! -d "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting" ]; then
-  info "Installing zsh-syntax-highlighting..."
-  git clone https://github.com/zsh-users/zsh-syntax-highlighting \
-    "$ZSH_CUSTOM/plugins/zsh-syntax-highlighting"
+if [ ! -d "$ZSH_CUSTOM/plugins/fast-syntax-highlighting" ]; then
+  info "Installing fast-syntax-highlighting..."
+  git clone https://github.com/zdharma-continuum/fast-syntax-highlighting \
+    "$ZSH_CUSTOM/plugins/fast-syntax-highlighting"
 else
-  skip "zsh-syntax-highlighting already installed"
+  skip "fast-syntax-highlighting already installed"
 fi
 
 # --- xclip (clipboard — only useful on Linux with a display, skip headless) ---

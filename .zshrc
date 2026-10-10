@@ -73,7 +73,7 @@ ZSH_THEME="robbyrussell"
 plugins=(
 	git
 	zsh-autosuggestions
-	zsh-syntax-highlighting
+	fast-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
@@ -81,10 +81,11 @@ source $ZSH/oh-my-zsh.sh
 export EDITOR="nvim"
 export VISUAL="nvim"
 alias vim="nvim"
+alias vi="nvim"
 alias lg="lazygit"
 
 # zoxide (smarter cd — use 'z' instead of 'cd')
-eval "$(zoxide init zsh)"
+command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
 
 # Line editing keybindings
 bindkey '^U' kill-whole-line        # Ctrl+U deletes entire line
@@ -117,6 +118,15 @@ bindkey '^[[3;2~' kill-whole-line   # Shift+Delete deletes entire line
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 
+export PATH="$HOME/.local/bin:$PATH"
+
+# uv
+[ -f "$HOME/.local/bin/env" ] && . "$HOME/.local/bin/env"
+
 # opencode
-export PATH=/home/tritin/.opencode/bin:$PATH
-. "$HOME/.local/bin/env"
+[ -d "$HOME/.opencode/bin" ] && export PATH="$HOME/.opencode/bin:$PATH"
+
+# nvm
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
