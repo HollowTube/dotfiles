@@ -46,10 +46,22 @@ else
   skip "zsh already installed ($(zsh --version))"
 fi
 
+# --- .zshrc symlink (before Oh My Zsh, so its installer doesn't drop a template in the way) ---
+if [ -f "$DOTFILES_DIR/.zshrc" ]; then
+  if [ ! -f "$HOME/.zshrc" ] || [ -L "$HOME/.zshrc" ]; then
+    ln -sf "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
+    ok "Linked ~/.zshrc → $DOTFILES_DIR/.zshrc"
+  else
+    skip "~/.zshrc already exists — leaving it. Reference: $DOTFILES_DIR/.zshrc"
+  fi
+else
+  skip "No .zshrc in dotfiles dir — skipping symlink"
+fi
+
 # --- Oh My Zsh ---
 if [ ! -d "$HOME/.oh-my-zsh" ]; then
   info "Installing Oh My Zsh..."
-  RUNZSH=no CHSH=no sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+  RUNZSH=no CHSH=no KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
   ok "Oh My Zsh installed"
 else
   skip "Oh My Zsh already installed"
@@ -152,32 +164,25 @@ else
 fi
 
 mkdir -p "$HOME/.config"
-if [ ! -d "$HOME/.config/nvim" ]; then
-  info "Installing NvChad..."
-  git clone https://github.com/NvChad/starter "$HOME/.config/nvim"
-  ok "NvChad cloned — open nvim to finish installation"
+if [ -f "$HOME/.config/nvim/lazyvim.json" ]; then
+  # Omarchy ships LazyVim; swapping its lua dir for NvChad's would break nvim
+  skip "LazyVim config detected (~/.config/nvim) — leaving it. Move it aside and rerun to use NvChad"
 else
-  skip "nvim config already exists (~/.config/nvim)"
-fi
-NVIM_LUA="$HOME/.config/nvim/lua"
-if [ -e "$NVIM_LUA" ] && [ ! -L "$NVIM_LUA" ]; then
-  NVIM_LUA_BAK="$NVIM_LUA.bak.$(date +%Y%m%d%H%M%S)"
-  mv "$NVIM_LUA" "$NVIM_LUA_BAK"
-  warn "Moved existing nvim lua config to $NVIM_LUA_BAK"
-fi
-ln -sfn "$DOTFILES_DIR/nvim-custom" "$NVIM_LUA"
-ok "Linked nvim custom lua config"
-
-# --- .zshrc symlink ---
-if [ -f "$DOTFILES_DIR/.zshrc" ]; then
-  if [ ! -f "$HOME/.zshrc" ] || [ -L "$HOME/.zshrc" ]; then
-    ln -sf "$DOTFILES_DIR/.zshrc" "$HOME/.zshrc"
-    ok "Linked ~/.zshrc → $DOTFILES_DIR/.zshrc"
+  if [ ! -d "$HOME/.config/nvim" ]; then
+    info "Installing NvChad..."
+    git clone https://github.com/NvChad/starter "$HOME/.config/nvim"
+    ok "NvChad cloned — open nvim to finish installation"
   else
-    skip "~/.zshrc already exists — leaving it. Reference: $DOTFILES_DIR/.zshrc"
+    skip "nvim config already exists (~/.config/nvim)"
   fi
-else
-  skip "No .zshrc in dotfiles dir — skipping symlink"
+  NVIM_LUA="$HOME/.config/nvim/lua"
+  if [ -e "$NVIM_LUA" ] && [ ! -L "$NVIM_LUA" ]; then
+    NVIM_LUA_BAK="$NVIM_LUA.bak.$(date +%Y%m%d%H%M%S)"
+    mv "$NVIM_LUA" "$NVIM_LUA_BAK"
+    warn "Moved existing nvim lua config to $NVIM_LUA_BAK"
+  fi
+  ln -sfn "$DOTFILES_DIR/nvim-custom" "$NVIM_LUA"
+  ok "Linked nvim custom lua config"
 fi
 
 ok "Setup complete! Restart your shell or run: source ~/.zshrc"
@@ -208,6 +213,8 @@ elif [ "$IS_DESKTOP_LINUX" = true ]; then
     info "Installing WezTerm..."
     if command -v dnf &>/dev/null; then
       sudo dnf copr enable wezfurlong/wezterm-nightly -y && sudo dnf install -y wezterm
+    elif command -v pacman &>/dev/null; then
+      sudo pacman -S --noconfirm wezterm
     elif command -v flatpak &>/dev/null; then
       flatpak install -y flathub org.wezfurlong.wezterm
     else
@@ -232,4 +239,31 @@ elif [ "$IS_DESKTOP_LINUX" = true ]; then
   fi
 else
   skip "WezTerm — not applicable on remote Linux"
+fi
+
+# --- Omarchy: make WezTerm a first-class terminal ---
+if [ -d /usr/share/omarchy ] && command -v wezterm &>/dev/null; then
+  # Desktop entry override: lets xdg-terminal-exec pass --app-id/--dir/-e to WezTerm,
+  # so Omarchy's floating TUIs (btop, installers) keep their window class
+  mkdir -p "$HOME/.local/share/applications"
+  ln -sf "$DOTFILES_DIR/omarchy/org.wezfurlong.wezterm.desktop" \
+    "$HOME/.local/share/applications/org.wezfurlong.wezterm.desktop"
+  ok "Linked WezTerm desktop entry override"
+
+  # Default terminal for SUPER+RETURN and Omarchy menus
+  TERMINALS_LIST="$HOME/.config/hyprland-xdg-terminals.list"
+  if [ ! -f "$TERMINALS_LIST" ] || [ -L "$TERMINALS_LIST" ]; then
+    ln -sf "$DOTFILES_DIR/omarchy/hyprland-xdg-terminals.list" "$TERMINALS_LIST"
+    ok "Set WezTerm as default terminal"
+  else
+    skip "$TERMINALS_LIST already exists — leaving it. Reference: $DOTFILES_DIR/omarchy/hyprland-xdg-terminals.list"
+  fi
+
+  # Hyprland rule tagging WezTerm as a terminal (universal copy/paste)
+  ln -sf "$DOTFILES_DIR/omarchy/wezterm.lua" "$HOME/.config/hypr/wezterm.lua"
+  if ! grep -q 'require("hypr.wezterm")' "$HOME/.config/hypr/hyprland.lua"; then
+    printf '\nrequire("hypr.wezterm")\n' >> "$HOME/.config/hypr/hyprland.lua"
+  fi
+  hyprctl reload &>/dev/null || true
+  ok "Linked Hyprland WezTerm rules"
 fi

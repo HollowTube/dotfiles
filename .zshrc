@@ -1,6 +1,13 @@
 # If you come from bash you might have to change your $PATH.
 # export PATH=$HOME/bin:$HOME/.local/bin:/usr/local/bin:$PATH
 
+# Omarchy environment (OMARCHY_PATH, mise shims, BROWSER, bat man pages)
+OMARCHY_BASH=/usr/share/omarchy/default/bash
+if [ -r "$OMARCHY_BASH/env-bootstrap" ]; then
+  . "$OMARCHY_BASH/env-bootstrap"
+  . "$OMARCHY_BASH/envs"
+fi
+
 # Path to your Oh My Zsh installation.
 export ZSH="$HOME/.oh-my-zsh"
 
@@ -86,6 +93,13 @@ alias lg="lazygit"
 
 # zoxide (smarter cd — use 'z' instead of 'cd')
 command -v zoxide &>/dev/null && eval "$(zoxide init zsh)"
+
+# Omarchy tooling: mise-managed tools (gh, node, ...), fzf keybindings, aliases
+if [ -r "$OMARCHY_BASH/aliases" ]; then
+  command -v mise &>/dev/null && eval "$(mise activate zsh)"
+  command -v fzf &>/dev/null && source <(fzf --zsh)
+  source "$OMARCHY_BASH/aliases"
+fi
 
 # Line editing keybindings
 bindkey '^U' kill-whole-line        # Ctrl+U deletes entire line
