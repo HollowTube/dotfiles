@@ -164,25 +164,25 @@ else
 fi
 
 mkdir -p "$HOME/.config"
-if [ -f "$HOME/.config/nvim/lazyvim.json" ]; then
-  # Omarchy ships LazyVim; swapping its lua dir for NvChad's would break nvim
-  skip "LazyVim config detected (~/.config/nvim) — leaving it. Move it aside and rerun to use NvChad"
+NVIM_DIR="$HOME/.config/nvim"
+if [ -d /usr/share/omarchy ] && [ -f "$NVIM_DIR/lazyvim.json" ] && [ ! -L "$NVIM_DIR" ]; then
+  # Omarchy owns ~/.config/nvim (its theme.lua symlink keeps nvim in sync with
+  # the system theme), so only hook the personal settings into it
+  ln -sfn "$DOTFILES_DIR/nvim/lua/personal" "$NVIM_DIR/lua/personal"
+  for f in options keymaps; do
+    if ! grep -q "require(\"personal.$f\")" "$NVIM_DIR/lua/config/$f.lua"; then
+      printf '\nrequire("personal.%s")\n' "$f" >> "$NVIM_DIR/lua/config/$f.lua"
+    fi
+  done
+  ok "Hooked personal nvim settings into Omarchy's LazyVim"
 else
-  if [ ! -d "$HOME/.config/nvim" ]; then
-    info "Installing NvChad..."
-    git clone https://github.com/NvChad/starter "$HOME/.config/nvim"
-    ok "NvChad cloned — open nvim to finish installation"
-  else
-    skip "nvim config already exists (~/.config/nvim)"
+  if [ -e "$NVIM_DIR" ] && [ ! -L "$NVIM_DIR" ]; then
+    NVIM_BAK="$NVIM_DIR.bak.$(date +%Y%m%d%H%M%S)"
+    mv "$NVIM_DIR" "$NVIM_BAK"
+    warn "Moved existing nvim config to $NVIM_BAK"
   fi
-  NVIM_LUA="$HOME/.config/nvim/lua"
-  if [ -e "$NVIM_LUA" ] && [ ! -L "$NVIM_LUA" ]; then
-    NVIM_LUA_BAK="$NVIM_LUA.bak.$(date +%Y%m%d%H%M%S)"
-    mv "$NVIM_LUA" "$NVIM_LUA_BAK"
-    warn "Moved existing nvim lua config to $NVIM_LUA_BAK"
-  fi
-  ln -sfn "$DOTFILES_DIR/nvim-custom" "$NVIM_LUA"
-  ok "Linked nvim custom lua config"
+  ln -sfn "$DOTFILES_DIR/nvim" "$NVIM_DIR"
+  ok "Linked ~/.config/nvim → $DOTFILES_DIR/nvim (LazyVim) — open nvim to install plugins"
 fi
 
 ok "Setup complete! Restart your shell or run: source ~/.zshrc"

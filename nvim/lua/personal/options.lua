@@ -1,12 +1,12 @@
-require "nvchad.options"
+-- Personal options, shared by the standalone config and Omarchy's LazyVim
+-- (loaded from lua/config/options.lua). LazyVim already sets undofile,
+-- termguicolors and the system clipboard.
 
 local o = vim.o
 
 o.relativenumber = true
-o.termguicolors = true
 o.cursorlineopt = "both"
 o.scrolloff = 8
-o.undofile = true
 
 -- WSL clipboard: bridge to Windows clipboard via clip.exe
 if vim.fn.has("wsl") == 1 then
@@ -22,6 +22,4 @@ if vim.fn.has("wsl") == 1 then
     },
     cache_enabled = 0,
   }
-else
-  o.clipboard = "unnamedplus"
 end
