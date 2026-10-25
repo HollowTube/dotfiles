@@ -163,6 +163,19 @@ else
   skip "~/.tmux.conf already exists — leaving it. Reference: $DOTFILES_DIR/.tmux.conf"
 fi
 
+# tmux also loads ~/.config/tmux/tmux.conf after ~/.tmux.conf, so one there
+# (Omarchy ships its own) would override ours — point it at ours instead
+TMUX_XDG_CONF="$HOME/.config/tmux/tmux.conf"
+if [ -e "$TMUX_XDG_CONF" ] && [ ! -L "$TMUX_XDG_CONF" ]; then
+  TMUX_BAK="$TMUX_XDG_CONF.bak.$(date +%Y%m%d%H%M%S)"
+  mv "$TMUX_XDG_CONF" "$TMUX_BAK"
+  warn "Moved existing tmux config to $TMUX_BAK"
+fi
+if [ -e "$TMUX_XDG_CONF" ] || [ -n "$TMUX_BAK" ]; then
+  ln -sf "$DOTFILES_DIR/.tmux.conf" "$TMUX_XDG_CONF"
+  ok "Linked ~/.config/tmux/tmux.conf"
+fi
+
 mkdir -p "$HOME/.config"
 NVIM_DIR="$HOME/.config/nvim"
 if [ -d /usr/share/omarchy ] && [ -f "$NVIM_DIR/lazyvim.json" ] && [ ! -L "$NVIM_DIR" ]; then
