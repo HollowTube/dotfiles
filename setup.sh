@@ -198,6 +198,27 @@ else
   ok "Linked ~/.config/nvim → $DOTFILES_DIR/nvim (LazyVim) — open nvim to install plugins"
 fi
 
+# --- Claude Code status line (model, context, 5h/7d usage limits) ---
+if ! command -v jq &>/dev/null; then
+  info "Installing jq (used by the Claude Code status line)..."
+  pkg_install jq
+else
+  skip "jq already installed"
+fi
+
+mkdir -p "$HOME/.claude"
+ln -sf "$DOTFILES_DIR/claude/statusline.sh" "$HOME/.claude/statusline.sh"
+CLAUDE_SETTINGS="$HOME/.claude/settings.json"
+[ -f "$CLAUDE_SETTINGS" ] || echo '{}' > "$CLAUDE_SETTINGS"
+if jq -e '.statusLine' "$CLAUDE_SETTINGS" &>/dev/null; then
+  skip "Claude Code already has a statusLine — leaving it. Reference: $DOTFILES_DIR/claude/statusline.sh"
+else
+  # Merge rather than overwrite: Claude Code keeps its own settings in this file
+  jq '.statusLine = {"type": "command", "command": "~/.claude/statusline.sh"}' "$CLAUDE_SETTINGS" > "$CLAUDE_SETTINGS.tmp"
+  mv "$CLAUDE_SETTINGS.tmp" "$CLAUDE_SETTINGS"
+  ok "Enabled Claude Code status line"
+fi
+
 ok "Setup complete! Restart your shell or run: source ~/.zshrc"
 if command -v zsh &>/dev/null && [ "$(basename "$SHELL")" != "zsh" ]; then
   warn "zsh is not your default shell — run: chsh -s \$(which zsh)"
