@@ -145,6 +145,17 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
 
+# Claude Code: load the show-image mod (linked by setup.sh) in every session.
+if [ -d "$HOME/.claude/mods/show-image" ]; then
+  case ":${CLAUDE_CODE_PLUGIN_DIRS}:" in
+    *":$HOME/.claude/mods/show-image:"*) ;;
+    *) export CLAUDE_CODE_PLUGIN_DIRS="${CLAUDE_CODE_PLUGIN_DIRS:+$CLAUDE_CODE_PLUGIN_DIRS:}$HOME/.claude/mods/show-image" ;;
+  esac
+fi
+# herdr answers XTVERSION as neither kitty nor Ghostty, so Claude Code would
+# draw image alt text; it does pass kitty graphics through, so force them on.
+[[ $TERM_PROGRAM == herdr ]] && export CLAUDE_CODE_FORCE_TERMINAL_IMAGES=1
+
 # Machine-local overrides. Keep anything host- or employer-specific out of this
 # repo and put it here instead; sourced last so it wins on conflict.
 [ -r "$HOME/.zshrc.local" ] && source "$HOME/.zshrc.local"

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# mmdview: render mermaid file (or stdin) and show via kitty graphics
+# Install: setup.sh links this into ~/.local/bin. Needs mmdc (npm i -g @mermaid-js/mermaid-cli).
+set -e
+in="${1:-/dev/stdin}"; out=$(mktemp --suffix=.png)
+mmdc -q -i "$in" -o "$out" -b white -s 3
+data=$(base64 -w0 "$out"); first=1
+while [ -n "$data" ]; do
+  chunk=${data:0:4096}; data=${data:4096}
+  m=$([ -n "$data" ] && echo 1 || echo 0)
+  if [ $first = 1 ]; then printf '\e_Gf=100,a=T,m=%s;%s\e\\' "$m" "$chunk"; first=0
+  else printf '\e_Gm=%s;%s\e\\' "$m" "$chunk"; fi
+done
+echo; rm -f "$out"

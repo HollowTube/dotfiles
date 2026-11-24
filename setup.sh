@@ -219,6 +219,28 @@ else
   ok "Enabled Claude Code status line"
 fi
 
+# --- Inline images: Mermaid diagrams in the terminal (kitty graphics) ---
+# mmdview renders a .mmd and prints it with the kitty graphics protocol, which
+# herdr passes through to WezTerm (the iTerm2 protocol it does not).
+# The show-image Claude Code mod lets the agent draw a PNG under its tool call;
+# .zshrc loads it via CLAUDE_CODE_PLUGIN_DIRS.
+mkdir -p "$HOME/.local/bin" "$HOME/.claude/mods"
+ln -sf "$DOTFILES_DIR/bin/mmdview" "$HOME/.local/bin/mmdview"
+ok "Linked ~/.local/bin/mmdview"
+ln -sfn "$DOTFILES_DIR/claude/mods/show-image" "$HOME/.claude/mods/show-image"
+ok "Linked ~/.claude/mods/show-image"
+if ! command -v mmdc &>/dev/null; then
+  if command -v npm &>/dev/null; then
+    info "Installing mermaid-cli (mmdc)..."
+    npm install -g @mermaid-js/mermaid-cli &>/dev/null && ok "Installed mmdc" \
+      || warn "npm install -g @mermaid-js/mermaid-cli failed — install it by hand"
+  else
+    warn "npm not found — install @mermaid-js/mermaid-cli for mmdview"
+  fi
+else
+  skip "mmdc already installed"
+fi
+
 ok "Setup complete! Restart your shell or run: source ~/.zshrc"
 if command -v zsh &>/dev/null && [ "$(basename "$SHELL")" != "zsh" ]; then
   warn "zsh is not your default shell — run: chsh -s \$(which zsh)"
